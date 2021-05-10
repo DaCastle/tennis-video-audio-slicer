@@ -4,9 +4,8 @@ var source;
 var analyser = audioContext.createAnalyser();
 var printHere = document.getElementById('printHere')
 
-const url = 'vids/winter-warm-up.mp4'.replace(/\\/g, "/")
-const fileName = url.substring(5)
-const partialName = url.substring(5,url.length-4)
+const fileName = '20190829_195016.s1v2.mp4'
+const partialName = fileName.substring(0,fileName.length-4)
 
 const decibalThreshold = -25.0
 const minClipLength = 5
@@ -21,10 +20,10 @@ function fetchAudio(url, callback) {
     })
     .catch(error => {
         console.log(error)
-        const multiplesOf10MinClips = 5
-        for (let i = 0; i < multiplesOf10MinClips; i++) { 
+        const multiplesOf20MinClips = 3
+        for (let i = 0; i < multiplesOf20MinClips; i++) { 
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*600} -to ${(i+1)*600} -c:v copy -c:a copy ${partialName}.s${i+1}.mp4${i+1 == multiplesOf10MinClips ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*1200} -to ${(i+1)*1200} -c:v copy -c:a copy ${partialName}.s${i+1}.mp4${i+1 == multiplesOf20MinClips ? '' : ' && '}`
             printHere.appendChild(p)
             // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
 
@@ -99,7 +98,7 @@ let finalChunks = []
 let firstGoodChunk = null
 let lastGoodChunk = null
 
-fetchAudio(url, function (arrayBuffer) {
+fetchAudio(fileName, function (arrayBuffer) {
     decode(arrayBuffer, function (audioBuffer) {
 
         soundChunks = slice(audioBuffer, timePerChunk)
