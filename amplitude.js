@@ -4,7 +4,7 @@ var source;
 var analyser = audioContext.createAnalyser();
 var printHere = document.getElementById('printHere')
 
-const url = 'vids/20190829_195016.slice5.mp4'
+const url = 'vids/PXL_20210415_185038174.mp4'
 const fileName = url.substring(5)
 const partialName = url.substring(5,url.length-4)
 
@@ -24,7 +24,7 @@ function fetchAudio(url, callback) {
         const multiplesOf10MinClips = 5
         for (let i = 0; i < multiplesOf10MinClips; i++) { 
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*600} -to ${(i+1)*600} -c:v copy -c:a copy ${partialName}.slice${i+1}.mp4${i+1 == multiplesOf10MinClips ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*600} -to ${(i+1)*600} -c:v copy -c:a copy ${partialName}.s${i+1}.mp4${i+1 == multiplesOf10MinClips ? '' : ' && '}`
             printHere.appendChild(p)
             // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
 
@@ -157,7 +157,7 @@ fetchAudio(url, function (arrayBuffer) {
 
         for (let i = 0; i < finalChunks.length; i++) {
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -c:v libx264 -preset ultrafast -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.p${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
             // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
             printHere.appendChild(p)
         }
@@ -167,7 +167,7 @@ fetchAudio(url, function (arrayBuffer) {
 
         for (let j = 0; j < finalChunks.length; j++) {
             var p = document.createElement('p')
-            p.innerHTML = `file '${partialName}.part${j+1}.mp4'`
+            p.innerHTML = `file '${partialName}.p${j+1}.mp4'`
             printHere.appendChild(p)
         }
 
