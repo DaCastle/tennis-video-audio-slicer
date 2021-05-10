@@ -4,19 +4,33 @@ var source;
 var analyser = audioContext.createAnalyser();
 var printHere = document.getElementById('printHere')
 
-var url = 'PXL_20210415_185038174.mp4';
+const url = 'vids/20190829_195016.slice5.mp4'
+const fileName = url.substring(5)
+const partialName = url.substring(5,url.length-4)
 
 const decibalThreshold = -25.0
 const minClipLength = 5
 
 function fetchAudio(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function () {
-        callback(xhr.response);
-    };
-    xhr.send();
+    fetch(url)
+    .then(response => {
+        return response.arrayBuffer()
+    })
+    .then(buffer => {
+        callback(buffer)
+    })
+    .catch(error => {
+        console.log(error)
+        const multiplesOf10MinClips = 5
+        for (let i = 0; i < multiplesOf10MinClips; i++) { 
+            var p = document.createElement('span')
+            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*600} -to ${(i+1)*600} -c:v copy -c:a copy ${partialName}.slice${i+1}.mp4${i+1 == multiplesOf10MinClips ? '' : ' && '}`
+            printHere.appendChild(p)
+            // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
+
+        }
+    })
+
 }
 
 function decode(arrayBuffer, callback) {
@@ -140,11 +154,10 @@ fetchAudio(url, function (arrayBuffer) {
         printHere.appendChild(document.createElement('br'))
         printHere.appendChild(document.createElement('br'))
 
-        const paritalURL = url.substring(0,url.length-4)
 
         for (let i = 0; i < finalChunks.length; i++) {
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
             // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
             printHere.appendChild(p)
         }
@@ -154,7 +167,7 @@ fetchAudio(url, function (arrayBuffer) {
 
         for (let j = 0; j < finalChunks.length; j++) {
             var p = document.createElement('p')
-            p.innerHTML = `file '${paritalURL}.part${j+1}.mp4'`
+            p.innerHTML = `file '${partialName}.part${j+1}.mp4'`
             printHere.appendChild(p)
         }
 
@@ -162,7 +175,7 @@ fetchAudio(url, function (arrayBuffer) {
 
         var p = document.createElement('p')
         // p.innerHTML = `ffmpeg -f concat -i slices.txt cut-${url}`
-        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${url}`
+        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${fileName}`
         printHere.appendChild(p)
 
     });
