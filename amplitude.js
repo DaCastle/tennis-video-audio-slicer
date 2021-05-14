@@ -160,7 +160,7 @@ fetchAudio(fileName, function (arrayBuffer) {
             printHere.appendChild(p)
         }
         p = document.createElement('span')
-        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${fileName}`
+        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${fileName} && del *.p*`
         printHere.appendChild(p)
 
 
