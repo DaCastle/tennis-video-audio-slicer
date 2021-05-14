@@ -156,7 +156,7 @@ fetchAudio(fileName, function (arrayBuffer) {
 
         for (let i = 0; i < finalChunks.length; i++) {
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -c:v libx264 -crf 18 -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.p${i+1}.mp4 && `
+            p.innerHTML = `ffmpeg -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -i ${fileName} -c:v libx264 -crf 18 ${partialName}.p${i+1}.mp4 && `
             printHere.appendChild(p)
         }
         p = document.createElement('span')
