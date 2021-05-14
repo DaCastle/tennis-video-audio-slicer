@@ -4,15 +4,18 @@ var source;
 var analyser = audioContext.createAnalyser();
 var printHere = document.getElementById('printHere')
 
-const fileName = '20190829_195016.s1v2.mp4'
+const fileName = '20190829_195016.s1.mp4'
 const partialName = fileName.substring(0,fileName.length-4)
 
-const decibalThreshold = -25.0
-const minClipLength = 5
-
+const decibalThreshold = -65.0
+const minClipLength = 3
+// highpass high ignores more low sounds, lowpass low filters more high sounds
 function fetchAudio(url, callback) {
     fetch(url)
     .then(response => {
+        var p = document.createElement('p') // 6.55 wind h-2000 l-2000, trying h-3000 l-3000
+        p.innerHTML = `ffmpeg -i ${fileName} -c:v copy -af "highpass=4000,lowpass=2000" ${partialName}.af.mp4`
+        printHere.appendChild(p)
         return response.arrayBuffer()
     })
     .then(buffer => {
@@ -23,10 +26,8 @@ function fetchAudio(url, callback) {
         const multiplesOf20MinClips = 3
         for (let i = 0; i < multiplesOf20MinClips; i++) { 
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*1200} -to ${(i+1)*1200} -c:v copy -c:a copy ${partialName}.s${i+1}.mp4${i+1 == multiplesOf20MinClips ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -ss ${i*1200} -to ${(i+1)*1200} -c:v copy -af "highpass=4000,lowpass=2000" ${partialName}.s${i+1}.mp4${i+1 == multiplesOf20MinClips ? '' : ' && '}`
             printHere.appendChild(p)
-            // p.innerHTML = `ffmpeg -i ${url} -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} -c:v copy -c:a copy ${paritalURL}.part${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
-
         }
     })
 
@@ -102,7 +103,6 @@ fetchAudio(fileName, function (arrayBuffer) {
     decode(arrayBuffer, function (audioBuffer) {
 
         soundChunks = slice(audioBuffer, timePerChunk)
-        
         /**
          * create an object with the timestap as key, and decibal as value
          */
@@ -114,7 +114,6 @@ fetchAudio(fileName, function (arrayBuffer) {
                 }
             }
         }
-
         printHere.innerHTML += JSON.stringify(chunksWeWant)
 
 
@@ -130,14 +129,14 @@ fetchAudio(fileName, function (arrayBuffer) {
             }
 
             if (timeStamp - lastGoodChunk > minClipLength)  {
-                finalChunks.push([firstGoodChunk-1, lastGoodChunk-1+4])
+                finalChunks.push([firstGoodChunk-.5, lastGoodChunk-1+3.5])
                 firstGoodChunk = timeStamp
             }
             lastGoodChunk = timeStamp
         }
 
         if (lastGoodChunk != firstGoodChunk)
-        finalChunks.push([firstGoodChunk-1+1,lastGoodChunk-1+4])
+        finalChunks.push([firstGoodChunk-.5,lastGoodChunk-1+3.5])
 
         /**
          * one last pass over altered start/stop values to only
@@ -150,15 +149,20 @@ fetchAudio(fileName, function (arrayBuffer) {
         })
 
         printHere.innerHTML += JSON.stringify(finalChunks)
+
         printHere.appendChild(document.createElement('br'))
         printHere.appendChild(document.createElement('br'))
 
 
         for (let i = 0; i < finalChunks.length; i++) {
             var p = document.createElement('span')
-            p.innerHTML = `ffmpeg -i ${fileName} -c:v libx264 -crf 18 -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.p${i+1}.mp4${i+1 == finalChunks.length ? '' : ' && '}`
+            p.innerHTML = `ffmpeg -i ${fileName} -c:v libx264 -crf 18 -ss ${finalChunks[i][0]} -to ${finalChunks[i][1]} ${partialName}.p${i+1}.mp4 && `
             printHere.appendChild(p)
         }
+        p = document.createElement('span')
+        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${fileName}`
+        printHere.appendChild(p)
+
 
         printHere.appendChild(document.createElement('br'))
         printHere.appendChild(document.createElement('br'))
@@ -170,11 +174,6 @@ fetchAudio(fileName, function (arrayBuffer) {
         }
 
         printHere.appendChild(document.createElement('br'))
-
-        var p = document.createElement('p')
-        // p.innerHTML = `ffmpeg -f concat -i slices.txt cut-${url}`
-        p.innerHTML = `ffmpeg -f concat -i slices.txt -c:v copy -c:a copy cut-${fileName}`
-        printHere.appendChild(p)
 
     });
 });
