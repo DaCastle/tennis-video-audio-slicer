@@ -7,14 +7,14 @@ var printHere = document.getElementById('printHere')
 const fileName = '20190829_195016.s1.mp4'
 const partialName = fileName.substring(0,fileName.length-4)
 
-const decibalThreshold = -65.0
-const minClipLength = 3
+const decibalThreshold = -40.0
+const minClipLength = 4
 // highpass high ignores more low sounds, lowpass low filters more high sounds
 function fetchAudio(url, callback) {
     fetch(url)
     .then(response => {
         var p = document.createElement('p') // 6.55 wind h-2000 l-2000, trying h-3000 l-3000
-        p.innerHTML = `ffmpeg -i ${fileName} -c:v copy -af "highpass=4000,lowpass=2000" ${partialName}.af.mp4`
+        p.innerHTML = `ffmpeg -i ${fileName} -c:v copy -af "highpass=2500,lowpass=2000" ${partialName}.af.mp4 && ffmpeg -i ${partialName}.af.mp4 -c:v copy -filter:a "volume=3.0" ${partialName}.af2.mp4`
         printHere.appendChild(p)
         return response.arrayBuffer()
     })
@@ -128,7 +128,7 @@ fetchAudio(fileName, function (arrayBuffer) {
                 lastGoodChunk = timeStamp
             }
 
-            if (timeStamp - lastGoodChunk > minClipLength)  {
+            if (timeStamp - lastGoodChunk >= minClipLength)  {
                 finalChunks.push([firstGoodChunk-.5, lastGoodChunk-1+3.5])
                 firstGoodChunk = timeStamp
             }
